@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPOT | Smart Parking Optimization and Tracking</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="aurora aurora-one"></div>
+<div class="aurora aurora-two"></div>
+<div class="grid-overlay"></div>
+<div class="app-shell">
+  <aside>
+    <div class="brand">
+      <div class="logo">
+          🚘 <span>SPOT</span>
+      </div>
+      <p class="logo-fullform">
+          Parking intelligence
+      </p>
+    </div>
+    <nav>
+      <button class="nav active" data-page="dashboard">◈ Overview</button>
+      <button class="nav" data-page="entry">＋ Entry</button>
+      <button class="nav" data-page="exit">↗ Exit</button>
+      <button class="nav" data-page="slotsPage">▦ Slots</button>
+      <button class="nav" data-page="history">◷ History</button>
+      <button class="nav" data-page="queue">☷ Queue <b id="queueBadge">0</b></button>
+      <button class="nav" data-page="analysis">▤ Analysis</button>
+    </nav>
+    <div class="sidefoot">Operations control center</div>
+  </aside>
+  <main>
+    <header class="hero-header">
+      <div>
+        <div class="eyebrow">OPERATIONS CENTER</div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p>Enterprise-grade control for parking, queue, and revenue operations.</p>
+      </div>
+      <div class="header-badges">
+        <div class="live"><i></i> Live</div>
+        <div class="chip">⚡ Synced</div>
+        <div class="chip alt">🛡️ Protected</div>
+      </div>
+    </header>
+
+    <section id="dashboard" class="page active">
+      <div class="dashboard-panels">
+        <div class="metric-card">
+          <div class="metric-head">
+            <span>Occupancy</span>
+            <strong id="heroOccupancy">0%</strong>
+          </div>
+          <p>Current bay utilization</p>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head">
+            <span>Active vehicles</span>
+            <strong id="heroActive">0</strong>
+          </div>
+          <p>Vehicles currently parked</p>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head">
+            <span>Available slots</span>
+            <strong id="metricAvailable">0</strong>
+          </div>
+          <p>Slots ready for assignment</p>
+        </div>
+        <div class="metric-card accent">
+          <div class="metric-head">
+            <span>Revenue</span>
+            <strong id="heroRevenue">₹0</strong>
+          </div>
+          <p>Total collected amount</p>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <div class="analytics-title">Capacity overview</div>
+          <div class="analytics-bar-row">
+            <span>Cars</span>
+            <strong id="carOccupancyLabel">0 / 6</strong>
+          </div>
+          <div class="analytics-bar"><div class="bar-track"><div id="carBarFill" class="bar-fill"></div></div></div>
+          <div class="analytics-bar-row">
+            <span>Bikes</span>
+            <strong id="bikeOccupancyLabel">0 / 6</strong>
+          </div>
+          <div class="analytics-bar"><div class="bar-track"><div id="bikeBarFill" class="bar-fill"></div></div></div>
+        </div>
+        <div class="analytics-card stacked">
+          <div class="analytics-title">Queue health</div>
+          <div class="pill-row">
+            <span class="status-pill available">Available <strong id="metricAvailablePill">0</strong></span>
+            <span class="status-pill queued">Queued <strong id="metricQueued">0</strong></span>
+          </div>
+          <p class="analytics-note">Queued vehicles are assigned as soon as bays open.</p>
+        </div>
+      </div>
+
+      <div class="stats dashboard-stats">
+        <div class="stat vehicle-stat car-stat"><div><small>Car Slots</small><strong><span id="carAvailable">6</span> / <span id="carTotal">6</span></strong><p><span id="carOccupied">0</span> occupied</p></div><span>🚗</span></div>
+        <div class="stat vehicle-stat bike-stat"><div><small>Bike Slots</small><strong><span id="bikeAvailable">6</span> / <span id="bikeTotal">6</span></strong><p><span id="bikeOccupied">0</span> occupied</p></div><span>🏍️</span></div>
+        <div class="stat orange"><div><small>Valet Queue</small><strong id="waiting">0</strong><p>Waiting vehicles</p></div><span>⌛</span></div>
+        <span id="total" hidden>12</span><span id="available" hidden>12</span><span id="occupied" hidden>0</span>
+      </div>
+      <div class="card"><h2>Currently Parked Vehicles</h2><div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Type</th><th>Mobile</th><th>Slot</th><th>Entry Time</th></tr></thead><tbody id="parkedTable"></tbody></table></div></div>
+    </section>
+
+    <section id="entry" class="page">
+      <div class="mini-slot-stats">
+        <div class="mini-slot-card available-card">
+          <span class="mini-icon">✓</span>
+          <div><small>Available Slots</small><strong class="live-available">12</strong></div>
+        </div>
+        <div class="mini-slot-card occupied-card">
+          <span class="mini-icon">●</span>
+          <div><small>Occupied Slots</small><strong class="live-occupied">0</strong></div>
+        </div>
+      </div>
+      <div class="formcard"><div class="formicon">🚘</div><h2>Vehicle Entry</h2><p>Register a vehicle and assign a slot automatically.</p>
+      <form id="entryForm"><label>Vehicle Number<input id="vehicleNo" placeholder="UP32 AB 1234" required></label><div class="vehicle-type-field"><span class="field-label">Vehicle Type</span><div class="vehicle-type-cards"><button type="button" class="vehicle-card selected" data-type="Car"><span class="vehicle-emoji">🚗</span><strong>Car</strong><small>₹50 / hour</small></button><button type="button" class="vehicle-card" data-type="Bike"><span class="vehicle-emoji">🏍️</span><strong>Bike</strong><small>₹20 / hour</small></button></div><input type="hidden" id="vehicleType" value="Car"></div><label>Mobile Number<input id="mobile" type="tel" maxlength="10" pattern="[0-9]{10}" placeholder="9876543210" required></label><button class="primary">Park Vehicle →</button></form></div>
+    </section>
+
+    <section id="exit" class="page">
+      <div class="mini-slot-stats">
+        <div class="mini-slot-card available-card">
+          <span class="mini-icon">✓</span>
+          <div><small>Available Slots</small><strong class="live-available">12</strong></div>
+        </div>
+        <div class="mini-slot-card occupied-card">
+          <span class="mini-icon">●</span>
+          <div><small>Occupied Slots</small><strong class="live-occupied">0</strong></div>
+        </div>
+      </div>
+      <div class="formcard"><div class="formicon">🔑</div><h2>Vehicle Exit</h2><p>Find a vehicle to view charges and generate a receipt.</p>
+      <form id="exitForm"><label>Vehicle Number<input id="exitNo" placeholder="UP32 AB 1234" required></label><button class="primary">Find Vehicle</button></form><div id="exitResult"></div></div>
+    </section>
+
+    <section id="slotsPage" class="page">
+      <div class="card"><div class="cardhead"><div><h2>Parking Slots</h2><p>Live car and bike slot availability</p></div><div class="legend"><span>● Available</span><span>● Occupied</span></div></div><div id="slots" class="slots"></div></div>
+    </section>
+
+    <section id="history" class="page">
+      <div class="card"><div class="cardhead"><div><h2>Parking History</h2><p>Completed vehicle exits and payment records</p></div></div>
+      <div class="history-toolbar">
+        <label class="history-search">
+          <span>🔎</span>
+          <input id="historySearch" type="text" placeholder="Search vehicle number" autocomplete="off">
+        </label>
+        <div class="history-meta">Showing <strong id="historyCount">0</strong> records</div>
+      </div>
+      <div class="tablewrap"><table><thead><tr><th>Vehicle</th><th>Type</th><th>Slot</th><th>Entry</th><th>Exit</th><th>Duration</th><th>Charge</th></tr></thead><tbody id="historyTable"></tbody></table></div></div>
+    </section>
+
+    <section id="queue" class="page">
+      <div class="card">
+        <div class="cardhead">
+          <div>
+            <h2>Valet Waiting Queue</h2>
+            <p>FIFO — first vehicle in, first vehicle parked</p>
+          </div>
+        </div>
+
+        <div id="queueList"></div>
+
+        <!-- charts removed from queue; moved to Analysis page -->
+
+      </div>
+    </section>
+    
+    <section id="analysis" class="page">
+      <div class="card">
+        <div class="cardhead"><div><h2>Analysis</h2><p>Live analytics and charts based on real backend data</p></div></div>
+
+        <div class="analysis-top">
+          <div class="analysis-card">
+            <span>Active parkings</span>
+            <strong id="analysisParked">0</strong>
+            <small>Total vehicles currently parked</small>
+          </div>
+          <div class="analysis-card">
+            <span>Total revenue</span>
+            <strong id="analysisRevenue">₹0</strong>
+            <small>All time completed exits</small>
+          </div>
+          <div class="analysis-card">
+            <span>Avg. duration</span>
+            <strong id="analysisAvgDuration">0 min</strong>
+            <small>Based on recent exits</small>
+          </div>
+          <div class="analysis-card">
+            <span>Queue waiting</span>
+            <strong id="analysisQueue">0</strong>
+            <small>Vehicles waiting for parking</small>
+          </div>
+        </div>
+
+        <div class="charts-panel">
+          <div class="charts-row">
+            <div class="chartcard"><canvas id="occupancyChart"></canvas></div>
+            <div class="chartcard"><canvas id="revenueChart"></canvas></div>
+            <div class="chartcard"><canvas id="typeChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+<div id="modal" class="modal"><div class="modalbox" id="modalContent"></div></div>
+<!-- Chart.js for charts and html2pdf for PDF export -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body></html>
